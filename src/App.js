@@ -1,5 +1,6 @@
 import './App.css';
 import { useState, useEffect } from 'react';
+import alarm from  './alarm.wav'
 
 function App() {
 
@@ -18,13 +19,30 @@ function App() {
     setIsRunning(false);
     setSeconds(0);
   }
+  
+  function secsToMins(seconds) {
+    let mins = Math.floor(seconds / 60);
+    let secs = seconds % 60;
+    let padding = (secs < 10) ? "0" : "";
+    return `${mins}:${padding}${secs}`
+  }
 
 
   useEffect(() => {
     let interval = null;
+    console.log()
     if (isRunning) {
       interval = setInterval(() => {
-        setSeconds(seconds => seconds + 1);
+        setSeconds((seconds) => {
+          if (seconds > 0) {
+          return seconds - 1
+          } else if (seconds == 1) {
+            let sound = new Audio(alarm);
+            sound.play();
+          }
+          clearInterval(interval);
+          return 0;
+        });
       }, 1000);
     } else {
       clearInterval(interval);
@@ -32,20 +50,32 @@ function App() {
     return () => clearInterval(interval);
   }, [isRunning]);
 
+  function handleSubmit(e) {
+    e.preventDefault();
+    setSeconds(e.target.minutes.value * 60);
+    startTimer();
+  }
+
 
   return (
     <div className="App">
       <header>react-timer</header>
       <main>
         <div className="timer">
-          <p>{seconds} seconds</p>
+          <p>{secsToMins(seconds)}</p>
         </div>
         <button id="start" onClick={startTimer}>Start</button>
         <button id="stop" onClick={pauseTimer}>Pause</button>
-        <button it="reset" onClick={resetTimer}>Reset</button>
+        <button id="reset" onClick={resetTimer}>Reset</button>
+        <form onSubmit={handleSubmit}>
+          <input name="minutes" type="number" placeholder="5"></input> minute(s)
+          <button type="submit">Submit</button>
+        </form>
       </main>
     </div>
   );
 }
 
 export default App;
+
+
